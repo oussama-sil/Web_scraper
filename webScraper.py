@@ -133,8 +133,8 @@ def get_rencontre_stats(idRencontre):
                 "cartonJaune":cartonJaune,
                 "cartonRouge":cartonRouge,
                 "guardien":guardien,
-                "numLicence":int(numLicence),
-                "numero":int(numero),
+                "numLicence":numLicence,
+                "numero":numero,
                 "nom":nom
             })
     #equipeB
@@ -150,7 +150,7 @@ def get_rencontre_stats(idRencontre):
             indx += 1
             numero = tmp_j.findChildren("div" , recursive=False)[1].text.strip()
             if numero == "" :
-                numero = "0"
+                numero = None
             nom = tmp_j.findChildren("div" , recursive=False)[0].findChildren("span" , recursive=False)[0].text.strip()+" "+tmp_j.findChildren("div" , recursive=False)[0].findChildren("span" , recursive=False)[1].text.strip()
             list_joueurs_rencontre.append({
                 "idRencontre":idRencontre,
@@ -159,8 +159,8 @@ def get_rencontre_stats(idRencontre):
                 "cartonJaune":cartonJaune,
                 "cartonRouge":cartonRouge,
                 "guardien":guardien,
-                "numLicence":int(numLicence),
-                "numero":int(numero),
+                "numLicence":numLicence,
+                "numero":numero,
                 "nom":nom
             })
 
@@ -169,10 +169,26 @@ def get_rencontre_stats(idRencontre):
 
     tmp_li12 = soup.find_all("div",{"class"  : "container officiels"})[1].findChildren("div" , recursive=False)[0].findChildren("div" , recursive=False)
 
-    arbitre = tmp_li12[0].text.split(":")[1].strip()
-    assistant1 = tmp_li12[1].text.split(":")[1].strip()
-    assistant2 = tmp_li12[2].text.split(":")[1].strip()
-    commissaire = tmp_li12[3].text.split(":")[1].strip()
+    try:
+        arbitre = tmp_li12[0].text.split(":")[1].strip()
+    except:
+        arbitre = None
+    
+    try:
+        assistant1 = tmp_li12[1].text.split(":")[1].strip()
+    except:
+        assistant1 = None
+    
+    try:
+        assistant2 = tmp_li12[2].text.split(":")[1].strip()
+    except:
+        assistant2 = None
+    
+    try:
+        commissaire = tmp_li12[3].text.split(":")[1].strip()
+    except:
+        commissaire = None
+        
     try:
         staffMedical = tmp_li12[4].text.split(":")[1].strip()
     except:
@@ -186,21 +202,21 @@ def get_rencontre_stats(idRencontre):
         "categorie":categorie,
         "groupe":groupe,
         "honneur":honneur,
-        "journee":int(journee),
+        "journee":journee,
         "date":date,
         "season":season,
         "stade":stade,
         "EquipeA":EquipeA,
         "EquipeB":EquipeB,
-        "butsA":int(butsA),
-        "butsB":int(butsB),
+        "butsA":butsA,
+        "butsB":butsB,
         "arbitre":arbitre,
         "assistant1":assistant1,
         "assistant2":assistant2,
         "commissaire":commissaire,
         "staffMedical":staffMedical
     }
-    return rencontre,list_buts,list_joueurs_rencontre
+    return rencontre,list_buts,list_joueurs_rencontre,rencontre["season"]=="2021/2022"
 
 
 
@@ -226,22 +242,22 @@ def get_equipe(idEquipe):
     try:
         telephone = int(tmp_li1[4].text.split(":")[1].strip()) 
     except:
-        telephone = 0
+        telephone = None
     try:
         mobile = int(tmp_li1[5].text.split(":")[1].strip()) 
     except:
-        mobile = 0
+        mobile = None
     try:
         fax =   int(tmp_li1[6].text.split(":")[1].strip()) 
     except:
-        fax = 0
+        fax = None
     
     president = tmp_li1[7].text.split(":")[1].strip()
     presidentDeSection= tmp_li1[8].text.split(":")[1].strip()
     try:
         totalJoueur = int( tmp_li1[9].text.split(":")[1].strip())
     except:
-        totalJoueur = 0
+        totalJoueur = None
     location = tmp_li1[10].text.split(":")[1].strip()
     stade = tmp_li1[11].text.split(":")[1].strip()
     
@@ -300,7 +316,7 @@ def get_joueur(idJoueur):
     try:
         numeroJoueur = int(soup.find_all("span",{"class"  : "number-player"})[0].text)
     except:
-        numeroJoueur = 0
+        numeroJoueur = None
     
     post = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].findChildren("span" , recursive=False)[0].text.strip()
     nomJoueur = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].text.strip()
@@ -310,11 +326,11 @@ def get_joueur(idJoueur):
     try:
         ageJoueur = int(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[2].text.replace("Age","").strip())
     except:
-        ageJoueur = 0
+        ageJoueur = None
     try:
-        dateNaissance =  dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Date de naissance","").strip()).date()
+        dateNaissance =  str(dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Date de naissance","").strip()).date())
     except:
-        dateNaissance = 0
+        dateNaissance = None
     lieuNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[4].text.replace("Lieu de naissance","").strip()
     wilayaNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[5].text.replace("Wilaya","").strip()
     
@@ -322,6 +338,7 @@ def get_joueur(idJoueur):
         "idJoueur":idJoueur,
         "post":post,
         "nomJoueur":nomJoueur,
+        "numeroJoueur":numeroJoueur,
         "clubJoueur":clubJoueur,
         "categorieJoueur":categorieJoueur,
         "ageJoueur":ageJoueur,
@@ -330,7 +347,7 @@ def get_joueur(idJoueur):
         "wilayaNaissance":wilayaNaissance
     }   
 
-    return joueur
+    return joueur,soup.find_all("td")[0].text.strip()=="2021/2022"
 
 def create_joueur_file(start,end):
     book=xlsxwriter.Workbook("joueurs.xlsx")
@@ -341,6 +358,7 @@ def create_joueur_file(start,end):
     headers = ["idJoueur",
         "post",
         "nomJoueur",
+        "numeroJoueur",
         "clubJoueur",
         "categorieJoueur",
         "ageJoueur",
@@ -355,14 +373,15 @@ def create_joueur_file(start,end):
     for i in range(start,end+1):
         col = 0
         try:
-            print(i)
-            eq = get_joueur(i)
-            for key in eq:
-                sheet.write(row,col,eq[key])
-                col += 1
-            row += 1
+            eq,cnd = get_joueur(i)
+            if cnd:
+                print(i)
+                for key in eq:
+                    sheet.write(row,col,eq[key])
+                    col += 1
+                row += 1
         except Exception as ex :
-            traceback.print_exc()
+            # traceback.print_exc()
             print(ex)
 
     book.close()
@@ -392,12 +411,11 @@ def get_entraineur(idEntraineur):
     except:
         age = 0
     try:
-        dateNaissance =  dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Date de naissance","").strip()).date()
+        dateNaissance =  str(dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Date de naissance","").strip()).date())
     except:
-        dateNaissance = 0
+        dateNaissance = None
     lieuNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[4].text.replace("Lieu de naissance","").strip()
     wilayaNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[5].text.replace("Wilaya","").strip()
-    
     entraineur = {
         "idEntraineur":idEntraineur,
         "post":post,
@@ -410,7 +428,7 @@ def get_entraineur(idEntraineur):
         "wilayaNaissance":wilayaNaissance
     }   
 
-    return entraineur
+    return entraineur,soup.find_all("td")[0].text.strip()=="2021/2022"
 
 def create_entraineur_file(start,end):
     book=xlsxwriter.Workbook("entraineurs.xlsx")
@@ -436,11 +454,12 @@ def create_entraineur_file(start,end):
         col = 0
         try:
             print(i)
-            eq = get_entraineur(i)
-            for key in eq:
-                sheet.write(row,col,eq[key])
-                col += 1
-            row += 1
+            eq,cnd = get_entraineur(i)
+            if cnd:
+                for key in eq:
+                    sheet.write(row,col,eq[key])
+                    col += 1
+                row += 1
         except Exception as ex :
             traceback.print_exc()
             print(ex)
@@ -471,12 +490,11 @@ def get_staff(idStaff):
     except:
         age = 0
     try:
-        dateNaissance =  dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[2].text.replace("Date de naissance","").strip()).date()
+        dateNaissance =  str(dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[2].text.replace("Date de naissance","").strip()).date())
     except:
-        dateNaissance = 0
+        dateNaissance = None
     lieuNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Lieu de naissance","").strip()
     wilayaNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[4].text.replace("Wilaya","").strip()
-    
     staff = {
         "idStaff":idStaff,
         "post":post,
@@ -488,14 +506,14 @@ def get_staff(idStaff):
         "wilayaNaissance":wilayaNaissance
     }   
 
-    return staff
+    return staff,soup.find_all("td")[0].text.strip()=="2021/2022"
 
 def create_staff_file(start,end):
     book=xlsxwriter.Workbook("staff.xlsx")
     sheet=book.add_worksheet()
     row = 0
     col = 0
-        #writing the headers 
+    #writing the headers 
     headers = ["idStaff",
         "post",
         "nom",
@@ -513,53 +531,143 @@ def create_staff_file(start,end):
         col = 0
         try:
             print(i)
-            eq = get_staff(i)
-            for key in eq:
-                sheet.write(row,col,eq[key])
-                col += 1
-            row += 1
+            eq,cnd = get_staff(i)
+            if cnd:
+                for key in eq:
+                    sheet.write(row,col,eq[key])
+                    col += 1
+                row += 1
         except Exception as ex :
-            traceback.print_exc()
+            # traceback.print_exc()
             print(ex)
 
     book.close()
 
+# create_equipe_kfile(1,500)
 
+# create_staff_file(1,1400)
 
-
-
-create_staff_file(1239,1245)
+# a,b=get_entraineur(1300)
+# print(b)
+# create_entraineur_file(1,1400)
 
 # get_joueur(28628)
-#create_equipe_file(200,207)
+# create_joueur_file(28620,28628)
 
 # eq = get_equipe(207)
 # for key in eq:
+
 #     print(key+":"+str(eq[key]),end="\n")
 
 #! To get data 
 
 idRencontre = 9870
+start = 1000
+end = 10000
 
-# try:
-#     rencontre,list_buts,list_joueurs_rencontre = get_rencontre_stats(idRencontre)
-        
-#     for key in rencontre:
-#         print(key+":"+str(rencontre[key]),end="\n")
 
-#     for but in list_buts:
-#         print(but,end="\n") 
 
-#     for jr in list_joueurs_rencontre:
-#         print(jr,end="\n")
-
-# except Exception as ex :
-#     print(ex)
-
-# start = 9300
-# end = 9400
 
 # #Writing to the file 
+
+book1=xlsxwriter.Workbook("rencontre.xlsx")
+sheet1=book1.add_worksheet()
+book2=xlsxwriter.Workbook("buts.xlsx")
+sheet2=book2.add_worksheet()
+book3=xlsxwriter.Workbook("match_joueurs.xlsx")
+sheet3=book3.add_worksheet()
+row3 = 0
+col3 = 0
+    #writing the headers 
+headers3 = ["idRencontre",
+                "titulaire",
+                "capitaine",
+                "cartonJaune",
+                "cartonRouge",
+                "guardien",
+                "numLicence",
+                "numero",
+                "nom"]
+for hd in headers3:
+    sheet3.write(row3,col3,hd)
+    col3 +=1
+row3 +=1
+    #writing items 
+
+row2 = 0
+col2 = 0
+headers2 = ["idRencontre","estPenalite","minute","nomJoueur","pour"]
+for hd in headers2:
+    sheet2.write(row2,col2,hd)
+    col2 +=1
+
+
+
+row1 = 0
+col1 = 0
+    #writing the headers 
+headers1 = ["idRencontre",
+        "categorie",
+        "groupe",
+        "honneur",
+        "journee",
+        "date",
+        "season",
+        "stade",
+        "EquipeA",
+        "EquipeB",
+        "butsA",
+        "butsB",
+        "arbitre",
+        "assistant1",
+        "assistant2",
+        "commissaire",
+        "staffMedical"]
+for hd in headers1:
+    sheet1.write(row1,col1,hd)
+    col1 +=1
+    #writing items 
+row1 +=1
+
+
+for i in range(start,end+1):
+    col3 = 0
+    col2 = 0
+    col1  = 0
+    try:
+        rencontre,list_buts,list_joueurs_rencontre,cnd = get_rencontre_stats(i)
+
+        if cnd :
+            print(i)
+
+            for key in rencontre:
+              sheet1.write(row1,col1,rencontre[key])
+              col1 += 1
+            row1 += 1
+            
+            for but in list_buts:
+                col2 = 0
+                for key in but:
+                    sheet2.write(row2,col2,but[key])
+                    col2 += 1
+                row2 += 1
+
+            for jr in list_joueurs_rencontre:
+                col3 = 0
+                for key in jr:
+                    sheet3.write(row3,col3,jr[key])
+                    col3 += 1
+                row3 += 1
+            
+    except Exception as ex :
+        # traceback.print_exc()
+        print(ex)
+
+    
+book1.close()
+book2.close()
+book3.close()
+#!---
 
 # book=xlsxwriter.Workbook("buts.xlsx")
 # sheet=book.add_worksheet()
@@ -576,16 +684,17 @@ idRencontre = 9870
 #     col = 0
 #     try:
 #         print(i)
-#         rencontre,list_buts,list_joueurs_rencontre = get_rencontre_stats(i)
+#         rencontre,list_buts,list_joueurs_rencontre,cnd = get_rencontre_stats(i)
             
 #         # for key in rencontre:
 #         #     print(key+":"+str(rencontre[key]),end="\n")
-#         for but in list_buts:
-#             col = 0
-#             for key in but:
-#                 sheet.write(row,col,but[key])
-#                 col += 1
-#             row += 1
+#         if cnd :
+#             for but in list_buts:
+#                 col = 0
+#                 for key in but:
+#                     sheet.write(row,col,but[key])
+#                     col += 1
+#                 row += 1
 #     except Exception as ex :
 #         traceback.print_exc()
 #         print(ex)
@@ -593,7 +702,9 @@ idRencontre = 9870
     
 # book.close()
 
-#!----
+# !----
+# start = 1
+# end = 10000
 # book=xlsxwriter.Workbook("rencontre.xlsx")
 # sheet=book.add_worksheet()
 # row = 0
@@ -625,15 +736,15 @@ idRencontre = 9870
 #     col = 0
 #     try:
 #         print(i)
-#         rencontre,list_buts,list_joueurs_rencontre = get_rencontre_stats(i)
+#         rencontre,list_buts,list_joueurs_rencontre,cnd = get_rencontre_stats(i)
             
 #         # for key in rencontre:
 #         #     print(key+":"+str(rencontre[key]),end="\n")
-
-#         for key in rencontre:
-#             sheet.write(row,col,rencontre[key])
-#             col += 1
-#         row += 1
+#         if cnd:
+#           for key in rencontre:
+#               sheet.write(row,col,rencontre[key])
+#               col += 1
+#           row += 1
 #     except Exception as ex :
 #         traceback.print_exc()
 #         print(ex)
