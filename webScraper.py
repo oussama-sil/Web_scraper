@@ -215,7 +215,7 @@ def get_equipe(idEquipe):
     #! Test if id exists 
     if "Not Found (#404)" in soup.find_all("div",{"class"  : "wrapper"})[0].text or "Erreur (#8)" in soup.find_all("div",{"class"  : "wrapper"})[0].text:
         # print("Id:"+str(idRencontre)+" non valide")
-        raise Exception("Id:"+str(idRencontre)+" non valide")
+        raise Exception("Id:"+str(idEquipe)+" non valide")
 
     sigle = soup.find_all("div",{"class"  : "section-title-team"})[0].findChildren("h1" , recursive=True)[0].text.strip()
     tmp_li1 = soup.find_all("div",{"class"  : "section-title-team"})[0].findChildren("h6" , recursive=True)
@@ -285,8 +285,253 @@ def create_equipe_file(start,end):
     
 
 
+def get_joueur(idJoueur):
+    URL = "https://www.lwf-alger.org/joueur/view?id="+str(idJoueur)
+    page = requests.get(URL,headers={
+    "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    })
 
-create_equipe_file(200,207)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    #! Test if id exists 
+    if "Not Found (#404)" in soup.find_all("div",{"class"  : "wrapper"})[0].text or "Erreur (#8)" in soup.find_all("div",{"class"  : "wrapper"})[0].text:
+        # print("Id:"+str(idRencontre)+" non valide")
+        raise Exception("Id:"+str(idJoueur)+" non valide")
+    try:
+        numeroJoueur = int(soup.find_all("span",{"class"  : "number-player"})[0].text)
+    except:
+        numeroJoueur = 0
+    
+    post = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].findChildren("span" , recursive=False)[0].text.strip()
+    nomJoueur = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].text.strip()
+    nomJoueur = nomJoueur.replace(post,"").strip()
+    clubJoueur = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[0].text.replace("Club","").strip()
+    categorieJoueur =  soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[1].text.replace("Catégorie","").strip()
+    try:
+        ageJoueur = int(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[2].text.replace("Age","").strip())
+    except:
+        ageJoueur = 0
+    try:
+        dateNaissance =  dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Date de naissance","").strip()).date()
+    except:
+        dateNaissance = 0
+    lieuNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[4].text.replace("Lieu de naissance","").strip()
+    wilayaNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[5].text.replace("Wilaya","").strip()
+    
+    joueur = {
+        "idJoueur":idJoueur,
+        "post":post,
+        "nomJoueur":nomJoueur,
+        "clubJoueur":clubJoueur,
+        "categorieJoueur":categorieJoueur,
+        "ageJoueur":ageJoueur,
+        "dateNaissance":dateNaissance,
+        "lieuNaissance":lieuNaissance,
+        "wilayaNaissance":wilayaNaissance
+    }   
+
+    return joueur
+
+def create_joueur_file(start,end):
+    book=xlsxwriter.Workbook("joueurs.xlsx")
+    sheet=book.add_worksheet()
+    row = 0
+    col = 0
+        #writing the headers 
+    headers = ["idJoueur",
+        "post",
+        "nomJoueur",
+        "clubJoueur",
+        "categorieJoueur",
+        "ageJoueur",
+        "dateNaissance",
+        "lieuNaissance",
+        "wilayaNaissance"]
+    for hd in headers:
+        sheet.write(row,col,hd)
+        col +=1
+        #writing items 
+    row +=1
+    for i in range(start,end+1):
+        col = 0
+        try:
+            print(i)
+            eq = get_joueur(i)
+            for key in eq:
+                sheet.write(row,col,eq[key])
+                col += 1
+            row += 1
+        except Exception as ex :
+            traceback.print_exc()
+            print(ex)
+
+    book.close()
+
+
+
+def get_entraineur(idEntraineur):
+    URL = "https://www.lwf-alger.org/entraineur/view?id="+str(idEntraineur)
+    page = requests.get(URL,headers={
+    "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    })
+
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    #! Test if id exists 
+    if "Not Found (#404)" in soup.find_all("div",{"class"  : "wrapper"})[0].text or "Erreur (#8)" in soup.find_all("div",{"class"  : "wrapper"})[0].text:
+        # print("Id:"+str(idRencontre)+" non valide")
+        raise Exception("Id:"+str(idEntraineur)+" non valide")
+    
+    post = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].findChildren("span" , recursive=False)[0].text.strip()
+    nom = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].text.strip()
+    nom = nom.replace(post,"").strip()
+    club = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[0].text.replace("Club","").strip()
+    categorie =  soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[1].text.replace("Catégorie","").strip()
+    try:
+        age = int(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[2].text.replace("Age","").strip())
+    except:
+        age = 0
+    try:
+        dateNaissance =  dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Date de naissance","").strip()).date()
+    except:
+        dateNaissance = 0
+    lieuNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[4].text.replace("Lieu de naissance","").strip()
+    wilayaNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[5].text.replace("Wilaya","").strip()
+    
+    entraineur = {
+        "idEntraineur":idEntraineur,
+        "post":post,
+        "nom":nom,
+        "club":club,
+        "categorie":categorie,
+        "age":age,
+        "dateNaissance":dateNaissance,
+        "lieuNaissance":lieuNaissance,
+        "wilayaNaissance":wilayaNaissance
+    }   
+
+    return entraineur
+
+def create_entraineur_file(start,end):
+    book=xlsxwriter.Workbook("entraineurs.xlsx")
+    sheet=book.add_worksheet()
+    row = 0
+    col = 0
+        #writing the headers 
+    headers = ["idEntraineur",
+        "post",
+        "nom",
+        "club",
+        "categorie",
+        "age",
+        "dateNaissance",
+        "lieuNaissance",
+        "wilayaNaissance"]
+    for hd in headers:
+        sheet.write(row,col,hd)
+        col +=1
+        #writing items 
+    row +=1
+    for i in range(start,end+1):
+        col = 0
+        try:
+            print(i)
+            eq = get_entraineur(i)
+            for key in eq:
+                sheet.write(row,col,eq[key])
+                col += 1
+            row += 1
+        except Exception as ex :
+            traceback.print_exc()
+            print(ex)
+
+    book.close()
+
+
+
+def get_staff(idStaff):
+    URL = "https://www.lwf-alger.org/staff/view?id="+str(idStaff)
+    page = requests.get(URL,headers={
+    "User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+    })
+
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    #! Test if id exists 
+    if "Not Found (#404)" in soup.find_all("div",{"class"  : "wrapper"})[0].text or "Erreur (#8)" in soup.find_all("div",{"class"  : "wrapper"})[0].text:
+        # print("Id:"+str(idRencontre)+" non valide")
+        raise Exception("Id:"+str(idStaff)+" non valide")
+    
+    post = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].findChildren("span" , recursive=False)[0].text.strip()
+    nom = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("h4" , recursive=False)[0].text.strip()
+    nom = nom.replace(post,"").strip()
+    club = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[0].text.replace("Club","").strip()
+    try:
+        age = int(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[1].text.replace("Age","").strip())
+    except:
+        age = 0
+    try:
+        dateNaissance =  dateparser.parse(soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[2].text.replace("Date de naissance","").strip()).date()
+    except:
+        dateNaissance = 0
+    lieuNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[3].text.replace("Lieu de naissance","").strip()
+    wilayaNaissance = soup.find_all("div",{"class"  : "info-player"})[0].findChildren("li" , recursive=True)[4].text.replace("Wilaya","").strip()
+    
+    staff = {
+        "idStaff":idStaff,
+        "post":post,
+        "nom":nom,
+        "club":club,
+        "age":age,
+        "dateNaissance":dateNaissance,
+        "lieuNaissance":lieuNaissance,
+        "wilayaNaissance":wilayaNaissance
+    }   
+
+    return staff
+
+def create_staff_file(start,end):
+    book=xlsxwriter.Workbook("staff.xlsx")
+    sheet=book.add_worksheet()
+    row = 0
+    col = 0
+        #writing the headers 
+    headers = ["idStaff",
+        "post",
+        "nom",
+        "club",
+        "age",
+        "dateNaissance",
+        "lieuNaissance",
+        "wilayaNaissance"]
+    for hd in headers:
+        sheet.write(row,col,hd)
+        col +=1
+        #writing items 
+    row +=1
+    for i in range(start,end+1):
+        col = 0
+        try:
+            print(i)
+            eq = get_staff(i)
+            for key in eq:
+                sheet.write(row,col,eq[key])
+                col += 1
+            row += 1
+        except Exception as ex :
+            traceback.print_exc()
+            print(ex)
+
+    book.close()
+
+
+
+
+
+create_staff_file(1239,1245)
+
+# get_joueur(28628)
+#create_equipe_file(200,207)
 
 # eq = get_equipe(207)
 # for key in eq:
