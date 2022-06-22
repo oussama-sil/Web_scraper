@@ -48,7 +48,7 @@ def get_rencontre_stats(idRencontre):
     journee = get_digits(tmp_li1[2])
 
     #?finding date
-    date = dateparser.parse(tmp_li1[3].strip()).date()
+    date = str(dateparser.parse(tmp_li1[3].strip()).date())
 
     # print(tmp_li1)
 
@@ -314,7 +314,7 @@ def get_joueur(idJoueur):
         # print("Id:"+str(idRencontre)+" non valide")
         raise Exception("Id:"+str(idJoueur)+" non valide")
     try:
-        numeroJoueur = int(soup.find_all("span",{"class"  : "number-player"})[0].text)
+        numeroJoueur = soup.find_all("span",{"class"  : "number-player"})[0].text
     except:
         numeroJoueur = None
     
@@ -349,8 +349,8 @@ def get_joueur(idJoueur):
 
     return joueur,soup.find_all("td")[0].text.strip()=="2021/2022"
 
-def create_joueur_file(start,end):
-    book=xlsxwriter.Workbook("joueurs.xlsx")
+def create_joueur_file(start,end,filename):
+    book=xlsxwriter.Workbook(filename)
     sheet=book.add_worksheet()
     row = 0
     col = 0
@@ -374,8 +374,8 @@ def create_joueur_file(start,end):
         col = 0
         try:
             eq,cnd = get_joueur(i)
+            print(i)
             if cnd:
-                print(i)
                 for key in eq:
                     sheet.write(row,col,eq[key])
                     col += 1
@@ -562,112 +562,124 @@ def create_staff_file(start,end):
 #! To get data 
 
 idRencontre = 9870
-start = 1000
-end = 10000
+#! 1
+# start = 1
+# end = 10000
+#! 2
+# start = 10001
+# end = 20000
+#! 3
+# start = 20001
+# end = 30000
+#! 4
+start = 30001
+end = 40000
+#! 5
+# start = 40001
+# end = 45000
 
-
-
+filename = "joueur4.xlsx"
+# create_joueur_file(start,end,filename)
 
 # #Writing to the file 
-
-book1=xlsxwriter.Workbook("rencontre.xlsx")
-sheet1=book1.add_worksheet()
-book2=xlsxwriter.Workbook("buts.xlsx")
-sheet2=book2.add_worksheet()
-book3=xlsxwriter.Workbook("match_joueurs.xlsx")
-sheet3=book3.add_worksheet()
-row3 = 0
-col3 = 0
-    #writing the headers 
-headers3 = ["idRencontre",
-                "titulaire",
-                "capitaine",
-                "cartonJaune",
-                "cartonRouge",
-                "guardien",
-                "numLicence",
-                "numero",
-                "nom"]
-for hd in headers3:
-    sheet3.write(row3,col3,hd)
-    col3 +=1
-row3 +=1
-    #writing items 
-
-row2 = 0
-col2 = 0
-headers2 = ["idRencontre","estPenalite","minute","nomJoueur","pour"]
-for hd in headers2:
-    sheet2.write(row2,col2,hd)
-    col2 +=1
-
-
-
-row1 = 0
-col1 = 0
-    #writing the headers 
-headers1 = ["idRencontre",
-        "categorie",
-        "groupe",
-        "honneur",
-        "journee",
-        "date",
-        "season",
-        "stade",
-        "EquipeA",
-        "EquipeB",
-        "butsA",
-        "butsB",
-        "arbitre",
-        "assistant1",
-        "assistant2",
-        "commissaire",
-        "staffMedical"]
-for hd in headers1:
-    sheet1.write(row1,col1,hd)
-    col1 +=1
-    #writing items 
-row1 +=1
-
-
-for i in range(start,end+1):
+def create_rencontre_file(start,end):
+    book1=xlsxwriter.Workbook("rencontre.xlsx")
+    sheet1=book1.add_worksheet()
+    book2=xlsxwriter.Workbook("buts.xlsx")
+    sheet2=book2.add_worksheet()
+    book3=xlsxwriter.Workbook("match_joueurs.xlsx")
+    sheet3=book3.add_worksheet()
+    row3 = 0
     col3 = 0
+    #writing the headers 
+    headers3 = ["idRencontre",
+                    "titulaire",
+                    "capitaine",
+                    "cartonJaune",
+                    "cartonRouge",
+                    "guardien",
+                    "numLicence",
+                    "numero",
+                    "nom"]
+    for hd in headers3:
+        sheet3.write(row3,col3,hd)
+        col3 +=1
+    row3 +=1
+
+    row2 = 0
     col2 = 0
-    col1  = 0
-    try:
-        rencontre,list_buts,list_joueurs_rencontre,cnd = get_rencontre_stats(i)
+    headers2 = ["idRencontre","estPenalite","minute","nomJoueur","pour"]
+    for hd in headers2:
+        sheet2.write(row2,col2,hd)
+        col2 +=1
+    row2+=1
 
-        if cnd :
-            print(i)
+    row1 = 0
+    col1 = 0
+    headers1 = ["idRencontre",
+            "categorie",
+            "groupe",
+            "honneur",
+            "journee",
+            "date",
+            "season",
+            "stade",
+            "EquipeA",
+            "EquipeB",
+            "butsA",
+            "butsB",
+            "arbitre",
+            "assistant1",
+            "assistant2",
+            "commissaire",
+            "staffMedical"]
+    for hd in headers1:
+        sheet1.write(row1,col1,hd)
+        col1 +=1
+    row1 +=1
 
-            for key in rencontre:
-              sheet1.write(row1,col1,rencontre[key])
-              col1 += 1
-            row1 += 1
-            
-            for but in list_buts:
-                col2 = 0
-                for key in but:
-                    sheet2.write(row2,col2,but[key])
-                    col2 += 1
-                row2 += 1
 
-            for jr in list_joueurs_rencontre:
-                col3 = 0
-                for key in jr:
-                    sheet3.write(row3,col3,jr[key])
-                    col3 += 1
-                row3 += 1
-            
-    except Exception as ex :
-        # traceback.print_exc()
-        print(ex)
+    for i in range(start,end+1):
+        col3 = 0
+        col2 = 0
+        col1 = 0
+        try:
+            rencontre,list_buts,list_joueurs_rencontre,cnd = get_rencontre_stats(i)
 
-    
-book1.close()
-book2.close()
-book3.close()
+            if cnd : #if in 2021/2022
+                print(i)
+
+                for key in rencontre:
+                    sheet1.write(row1,col1,rencontre[key])
+                    col1 += 1
+                row1 += 1
+                
+                for but in list_buts:
+                    col2 = 0
+                    for key in but:
+                        sheet2.write(row2,col2,but[key])
+                        col2 += 1
+                    row2 += 1
+
+                for jr in list_joueurs_rencontre:
+                    col3 = 0
+                    for key in jr:
+                        sheet3.write(row3,col3,jr[key])
+                        col3 += 1
+                    row3 += 1
+                
+        except Exception as ex :
+            # traceback.print_exc()
+            print(ex)
+
+        
+    book1.close()
+    book2.close()
+    book3.close()
 #!---
+
+# create_rencontre_file(8761,9893)
+
 
 # book=xlsxwriter.Workbook("buts.xlsx")
 # sheet=book.add_worksheet()
