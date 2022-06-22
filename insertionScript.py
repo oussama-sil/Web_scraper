@@ -172,7 +172,8 @@ def insert_joueur_script(equipes):
                 b=get_equipe_id(equipes,ws.cell(row=i,column=5).value),
                 d=ws.cell(row=i,column=2).value.replace("'"," "),
                 e=ws.cell(row=i,column=6).value.replace("'"," "),
-                f=ws.cell(row=i,column=4).value
+                f=ws.cell(row=i,column=4).value,
+                f=ws.cell(row=i,column=4).value if ws.cell(row=i,column=4).value != None else 'NULL'
             ))
         except:
             pass
@@ -180,8 +181,6 @@ def insert_joueur_script(equipes):
         # print(ws.cell(row=i,column=1).value,"   -",get_equipe_id(equipes,ws.cell(row=i,column=4).value))
     file1.close()
     file2.close()
-
-
 
 
 def insert_rencontre_script(equipes,stades,arbitres):
@@ -292,6 +291,7 @@ def insert_arbitres_script(arbitres):
     file1.close()
 
 
+
 tmp = get_teams()
 tmp2 = get_stades()
 tmp3 = get_arbitres()
@@ -299,7 +299,6 @@ tmp4 = insert_rencontre_script(tmp,tmp2,tmp3) #liste id des rencontres
 tmp5 = get_joueurs()
 # tmp6 = insert_jouer_script(tmp4,tmp5) #liste joueurs 
 
-#TODO : create insertion for : stades , arbitres 
 
 #? Call for functions 
 #!--tested
@@ -309,6 +308,7 @@ tmp5 = get_joueurs()
 # insert_stades_script(tmp2)
 # insert_arbitres_script(tmp3)
 # tmp4 = insert_rencontre_script(tmp,tmp2,tmp3)
+
 
 #!--not tested 
 

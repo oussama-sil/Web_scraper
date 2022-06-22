@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import dateparser
 import xlsxwriter
 import traceback
+import openpyxl
+
 
 def get_digits(str):
     tmp_str=""
@@ -314,7 +316,7 @@ def get_joueur(idJoueur):
         # print("Id:"+str(idRencontre)+" non valide")
         raise Exception("Id:"+str(idJoueur)+" non valide")
     try:
-        numeroJoueur = soup.find_all("span",{"class"  : "number-player"})[0].text
+        numeroJoueur = int(soup.find_all("span",{"class"  : "number-player"})[0].text)
     except:
         numeroJoueur = None
     
@@ -578,8 +580,14 @@ end = 40000
 # start = 40001
 # end = 45000
 
-filename = "joueur4.xlsx"
-# create_joueur_file(start,end,filename)
+
+#!-----For player
+# filename = "joueurC1.xlsx"
+# end = 1000
+# start = 0
+# for i in range(0,50):
+#     create_joueur_file(1000*i+1,1000*(i+1),"./joueurs/joueurC{0}.xlsx".format(i))
+#     print("")
 
 # #Writing to the file 
 def create_rencontre_file(start,end):
@@ -678,7 +686,40 @@ def create_rencontre_file(start,end):
     book3.close()
 #!---
 
-create_rencontre_file(8761,9900)
+
+def merge_joueurs_files(start,end):
+    book=xlsxwriter.Workbook("joueur.xlsx")
+    sheet=book.add_worksheet()
+    row = 0
+    col = 0
+    headers = ["idJoueur",
+        "post",
+        "nomJoueur",
+        "numeroJoueur",
+        "clubJoueur",
+        "categorieJoueur",
+        "ageJoueur",
+        "dateNaissance",
+        "lieuNaissance",
+        "wilayaNaissance"]
+    for hd in headers:
+        sheet.write(row,col,hd)
+        col +=1
+    row +=1
+    col = 0
+    for fn in range(start,end+1):
+        wookbook = openpyxl.load_workbook("./joueurs/joueurC{0}.xlsx".format(fn))
+        ws = wookbook.active
+        for i in range(2, ws.max_row+1):   #row of the file ws
+            for col in range(1,len(headers)+1): #column  
+                sheet.write(row,col-1,ws.cell(row=i,column=col).value)
+            row+=1
+    book.close()  
+
+merge_joueurs_files(0,10)
+
+
+# create_rencontre_file(8761,9900)
 
 
 # book=xlsxwriter.Workbook("buts.xlsx")
