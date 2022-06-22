@@ -16,12 +16,13 @@ def get_teams():
     ws = wookbook.active
     tmp_li = []
     for i in range(2, ws.max_row+1):
-        tmp_li.append({
-            "idEquipe":ws.cell(row=i,column=1).value,
-            "sigle":ws.cell(row=i,column=2).value,
-            "groupe":ws.cell(row=i,column=4).value,
-            "division":ws.cell(row=i,column=5).value,
-        })
+        if ws.cell(row=i,column=5).value == "Honneur" or ws.cell(row=i,column=5).value == "Pré-Honneur":
+            tmp_li.append({
+                "idEquipe":ws.cell(row=i,column=1).value,
+                "sigle":ws.cell(row=i,column=2).value,
+                "groupe":ws.cell(row=i,column=4).value,
+                "division":ws.cell(row=i,column=5).value,
+            })
     return tmp_li
 
 def get_stades():
@@ -63,7 +64,7 @@ def get_arbitre_id(arbitres,nomArbitre):
     return arbitres.index(nomArbitre)
 
 def get_joueur_id(joueurs,nomJoueur):
-    return 1
+    # return 1
     for eq in joueurs:
         if eq["nomJoueur"]==nomJoueur :
             return eq["idJoueur"]
@@ -75,18 +76,19 @@ def insert_equipe_script():
     wookbook = openpyxl.load_workbook("./Finished/equipes.xlsx")
     ws = wookbook.active
     for i in range(2, ws.max_row+1):
-        file.write("INSERT INTO Equipe('idEquipe','sigle','nomComplet','division','groupe','anneeFondation','telephone','mobile','fax','location') VALUES ({a},'{b}','{c}','{d}','{m}',{e},{f},{g},{h},{i});\n".format(
-            a=ws.cell(row=i,column=1).value,
-            b=ws.cell(row=i,column=2).value.replace("'"," "),
-            c=ws.cell(row=i,column=3).value.replace("'"," "),
-            m=ws.cell(row=i,column=4).value,
-            d=ws.cell(row=i,column=5).value,
-            e=ws.cell(row=i,column=6).value or 'NULL',
-            f=ws.cell(row=i,column=7).value or 'NULL',
-            g=ws.cell(row=i,column=8).value or 'NULL', 
-            h=ws.cell(row=i,column=9).value or 'NULL',
-            i= "'{0}'".format(ws.cell(row=i,column=13).value.replace("'"," ")) if ws.cell(row=i,column=13).value != None else 'NULL'
-        ))
+        if ws.cell(row=i,column=5).value == "Honneur" or ws.cell(row=i,column=5).value == "Pré-Honneur":
+            file.write("INSERT INTO Equipe(idEquipe,sigle,nomComplet,division,groupe,anneeFondation,telephone,mobile,fax,location) VALUES ({a},'{b}','{c}','{d}','{m}',{e},{f},{g},{h},{i});\n".format(
+                a=ws.cell(row=i,column=1).value,
+                b=ws.cell(row=i,column=2).value.replace("'"," "),
+                c=ws.cell(row=i,column=3).value.replace("'"," "),
+                m=ws.cell(row=i,column=4).value,
+                d=ws.cell(row=i,column=5).value,
+                e=ws.cell(row=i,column=6).value or 'NULL',
+                f=ws.cell(row=i,column=7).value or 'NULL',
+                g=ws.cell(row=i,column=8).value or 'NULL', 
+                h=ws.cell(row=i,column=9).value or 'NULL',
+                i= "'{0}'".format(ws.cell(row=i,column=13).value.replace("'"," ")) if ws.cell(row=i,column=13).value != None else 'NULL'
+            ))
     file.close()
 
 #adding staff
@@ -98,7 +100,7 @@ def insert_staff_script(equipes):
     ws = wookbook.active
     for i in range(2, ws.max_row+1):
         try:
-            file1.write("INSERT INTO Staff('idStaff','prenom','nom','dateNaissance','lieuNaissance','wilayaNaissance') VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
+            file1.write("INSERT INTO Staff(idStaff,prenom,nom,dateNaissance,lieuNaissance,wilayaNaissance) VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=ws.cell(row=i,column=3).value.split(" ")[0].replace("'"," "),
                 c=ws.cell(row=i,column=3).value.split(" ")[1].replace("'"," "),
@@ -106,7 +108,7 @@ def insert_staff_script(equipes):
                 e=ws.cell(row=i,column=7).value.replace("'"," ") or 'NULL',
                 f=ws.cell(row=i,column=8).value.replace("'"," ") or 'NULL',
             ))
-            file2.write("INSERT INTO Occuper('idStaff','idEquipe','idSeason','position') VALUES ({a},{b},'2021/2022','{d}');\n".format(
+            file2.write("INSERT INTO Occuper(idStaff,idEquipe,idSeason,position) VALUES ({a},{b},'2021/2022','{d}');\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=get_equipe_id(equipes,ws.cell(row=i,column=4).value),
                 d=ws.cell(row=i,column=2).value.replace("'"," "),
@@ -128,7 +130,7 @@ def insert_entraineur_script(equipes):
     ws = wookbook.active
     for i in range(2, ws.max_row+1):
         try:
-            file1.write("INSERT INTO Entraineur('idEntraineur','nom','prenom','dateNaissance','lieuNaissance','wilayaNaissance') VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
+            file1.write("INSERT INTO Entraineur(idEntraineur,nom,prenom,dateNaissance,lieuNaissance,wilayaNaissance) VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=ws.cell(row=i,column=3).value.split(" ")[0].replace("'"," "),
                 c=ws.cell(row=i,column=3).value.split(" ")[1].replace("'"," "),
@@ -136,7 +138,7 @@ def insert_entraineur_script(equipes):
                 e=ws.cell(row=i,column=8).value.replace("'"," ") or 'NULL',
                 f=ws.cell(row=i,column=9).value.replace("'"," ") or 'NULL',
             ))
-            file2.write("INSERT INTO Entrainer('idEntraineur','idEquipe','idSeason','categorie','poste') VALUES ({a},{b},'2021/2022','{d}','{e}');\n".format(
+            file2.write("INSERT INTO Entrainer(idEntraineur,idEquipe,idSeason,categorie,poste) VALUES ({a},{b},'2021/2022','{d}','{e}');\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=get_equipe_id(equipes,ws.cell(row=i,column=4).value),
                 d=ws.cell(row=i,column=5).value.replace("'"," "),
@@ -157,7 +159,7 @@ def insert_joueur_script(equipes):
     ws = wookbook.active
     for i in range(2, ws.max_row+1):
         try:
-            file1.write("INSERT INTO Joueur('idJoueur','nom','prenom','dateNaissance','lieuNaissance','wilayaNaissance') VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
+            file1.write("INSERT INTO Joueur(idJoueur,nom,prenom,dateNaissance,lieuNaissance,wilayaNaissance) VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=ws.cell(row=i,column=3).value.split(" ")[0].replace("'"," "),
                 c=ws.cell(row=i,column=3).value.split(" ")[1].replace("'"," "),
@@ -165,7 +167,7 @@ def insert_joueur_script(equipes):
                 e=ws.cell(row=i,column=9).value.replace("'"," ") or 'NULL',
                 f=ws.cell(row=i,column=10).value.replace("'"," ") or 'NULL'
             ))
-            file2.write("INSERT INTO JouerPour('idJoueur','idEquipe','idSeason','position','categorie','dossard') VALUES ({a},{b},'2021/2022','{d}','{e}',{f});\n".format(
+            file2.write("INSERT INTO JouerPour(idJoueur,idEquipe,idSeason,position,categorie,dossard) VALUES ({a},{b},'2021/2022','{d}','{e}',{f});\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=get_equipe_id(equipes,ws.cell(row=i,column=5).value),
                 d=ws.cell(row=i,column=2).value.replace("'"," "),
@@ -190,10 +192,10 @@ def insert_rencontre_script(equipes,stades,arbitres):
     for i in range(2, ws.max_row+1):
     # for i in range(2, 5):
         try:
-            file1.write("""INSERT INTO Rencontre('idRencontre','idSeason','idStade','categorie','groupe','journee','date','idEquipeA','idEquipeB','butsA','butsB','idArbitre','assisstant1','assisstant2','commissaire','staffMedical','matchJoue')   
+            file1.write("""INSERT INTO Rencontre(idRencontre,idSeason,idStade,categorie,groupe,journee,date,idEquipeA,idEquipeB,butsA,butsB,idArbitre,assisstant1,assisstant2,commissaire,staffMedical,matchJoue)   
             VALUES ({a},'2021/2022',{c},'{d}','{e}',{f},'{g}',{ha},{hb},{ia},{ib},{j},{k},{l},{m},{n},{o});\n""".format(
                 a=ws.cell(row=i,column=1).value,
-                c= "'{0}'".format(get_stade_id(stades,ws.cell(row=i,column=8).value)) if ws.cell(row=i,column=8).value != None else 'NULL',
+                c= "{0}".format(get_stade_id(stades,ws.cell(row=i,column=8).value)) if ws.cell(row=i,column=8).value != None else 'NULL',
                 d=ws.cell(row=i,column=2).value,
                 e=ws.cell(row=i,column=3).value,
                 f=ws.cell(row=i,column=5).value,
@@ -229,7 +231,7 @@ def insert_jouer_script(liste_rencontres,joueurs):
     # for i in range(2, 5):
         if ws.cell(row=i,column=1).value in liste_rencontres:
             try:
-                file1.write("""INSERT INTO Jouer('idRencontre','idJoueur','titulaire','capitaine','nombreCartonJaune','nombreCartonRouge','dossard')   
+                file1.write("""INSERT INTO Jouer(idRencontre,idJoueur,titulaire,capitaine,nombreCartonJaune,nombreCartonRouge,dossard)   
                 VALUES ({a},{c},{d},{e},{f},{g},{h});\n""".format(
                     a=ws.cell(row=i,column=1).value,
                     c= get_joueur_id(joueurs,ws.cell(row=i,column=9).value),
@@ -259,7 +261,7 @@ def insert_marquer_script(equipes,liste_joueurs,joueurs,liste_rencontres):
         idJoueur = get_joueur_id(joueurs,ws.cell(row=i,column=4).value)
         if ws.cell(row=i,column=1).value in liste_rencontres and (idJoueur in liste_joueurs  or True) :
             try:
-                file1.write("""INSERT INTO Marquer('idRencontre','idJoueur','estPenalite','minute','pourEquipe')   
+                file1.write("""INSERT INTO Marquer(idRencontre,idJoueur,estPenalite,minute,pourEquipe)   
                 VALUES ({a},{c},{d},{e},{f});\n""".format(
                     a=ws.cell(row=i,column=1).value,
                     c= idJoueur,
@@ -275,23 +277,46 @@ def insert_marquer_script(equipes,liste_joueurs,joueurs,liste_rencontres):
         # print(ws.cell(row=i,column=1).value,"   -",get_equipe_id(equipes,ws.cell(row=i,column=4).value))
     file1.close()
 
+
+def insert_stades_script(stades):
+    file1 = open('insert_stade_script.sql', 'a',encoding="utf-8")
+    for i in range(0,len(stades)):
+        file1.write("""INSERT INTO Stade(idStade,nomStade) VALUES ({a},'{c}');\n""".format(a=i,c= stades[i]))
+    file1.close()
+
+
+def insert_arbitres_script(arbitres):
+    file1 = open('insert_arbitre_script.sql', 'a',encoding="utf-8")
+    for i in range(0,len(arbitres)):
+        file1.write("""INSERT INTO Arbitre(idArbitre,nomArbitre) VALUES ({a},'{c}');\n""".format(a=i,c= arbitres[i]))
+    file1.close()
+
+
 tmp = get_teams()
 tmp2 = get_stades()
 tmp3 = get_arbitres()
 tmp4 = insert_rencontre_script(tmp,tmp2,tmp3) #liste id des rencontres
 tmp5 = get_joueurs()
-tmp6 = insert_jouer_script(tmp4,tmp5) #liste joueurs 
+# tmp6 = insert_jouer_script(tmp4,tmp5) #liste joueurs 
 
 #TODO : create insertion for : stades , arbitres 
 
 #? Call for functions 
+#!--tested
 # insert_equipe_script()
 # insert_staff_script(tmp)
 # insert_entraineur_script(tmp)
-# insert_joueur_script(tmp)
+# insert_stades_script(tmp2)
+# insert_arbitres_script(tmp3)
 # tmp4 = insert_rencontre_script(tmp,tmp2,tmp3)
+
+#!--not tested 
+
+# insert_joueur_script(tmp)
 # tmp6 = insert_jouer_script(tmp4,tmp5)
 # insert_marquer_script(tmp,tmp6,tmp5,tmp4)
+
+
 
 # Import openyxl module
 
