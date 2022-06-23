@@ -585,9 +585,9 @@ end = 40000
 # filename = "joueurC1.xlsx"
 # end = 1000
 # start = 0
-# for i in range(0,50):
-#     create_joueur_file(1000*i+1,1000*(i+1),"./joueurs/joueurC{0}.xlsx".format(i))
-#     print("")
+for i in range(34,50):
+    create_joueur_file(1000*i+1,1000*(i+1),"./joueurs/joueurC{0}.xlsx".format(i))
+    print("")
 
 # #Writing to the file 
 def create_rencontre_file(start,end):
@@ -688,7 +688,7 @@ def create_rencontre_file(start,end):
 
 
 def merge_joueurs_files(start,end):
-    book=xlsxwriter.Workbook("joueur.xlsx")
+    book=xlsxwriter.Workbook("joueurs.xlsx")
     sheet=book.add_worksheet()
     row = 0
     col = 0
@@ -716,7 +716,7 @@ def merge_joueurs_files(start,end):
             row+=1
     book.close()  
 
-merge_joueurs_files(0,10)
+# merge_joueurs_files(0,28)
 
 
 # create_rencontre_file(8761,9900)

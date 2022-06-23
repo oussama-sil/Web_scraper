@@ -68,7 +68,7 @@ def get_joueur_id(joueurs,nomJoueur):
     for eq in joueurs:
         if eq["nomJoueur"]==nomJoueur :
             return eq["idJoueur"]
-    raise Exception("Id joueur not found")
+    raise Exception("Id={0} joueur not found".format(nomJoueur))
 
 #adding equipe 
 def insert_equipe_script():
@@ -157,8 +157,10 @@ def insert_joueur_script(equipes):
     file2 = open('insert_jouerPour_script.sql', 'a',encoding="utf-8")
     wookbook = openpyxl.load_workbook("./Finished/joueurs.xlsx")
     ws = wookbook.active
+    tmp_li = []
     for i in range(2, ws.max_row+1):
         try:
+            team = get_equipe_id(equipes,ws.cell(row=i,column=5).value)
             file1.write("INSERT INTO Joueur(idJoueur,nom,prenom,dateNaissance,lieuNaissance,wilayaNaissance) VALUES ({a},'{b}','{c}','{d}','{e}','{f}');\n".format(
                 a=ws.cell(row=i,column=1).value,
                 b=ws.cell(row=i,column=3).value.split(" ")[0].replace("'"," "),
@@ -172,15 +174,14 @@ def insert_joueur_script(equipes):
                 b=get_equipe_id(equipes,ws.cell(row=i,column=5).value),
                 d=ws.cell(row=i,column=2).value.replace("'"," "),
                 e=ws.cell(row=i,column=6).value.replace("'"," "),
-                f=ws.cell(row=i,column=4).value,
                 f=ws.cell(row=i,column=4).value if ws.cell(row=i,column=4).value != None else 'NULL'
             ))
+            tmp_li.append({"idJoueur":ws.cell(row=i,column=1).value,"nomJoueur":ws.cell(row=i,column=3).value})
         except:
             pass
-        # print(ws.cell(row=i,column=1).value,"   -",ws.cell(row=i,column=4).value,"-")
-        # print(ws.cell(row=i,column=1).value,"   -",get_equipe_id(equipes,ws.cell(row=i,column=4).value))
     file1.close()
     file2.close()
+    return tmp_li
 
 
 def insert_rencontre_script(equipes,stades,arbitres):
@@ -215,8 +216,7 @@ def insert_rencontre_script(equipes,stades,arbitres):
             # traceback.print_exc()
             # print(i,'****',ex)
             pass
-        # print(ws.cell(row=i,column=1).value,"   -",ws.cell(row=i,column=4).value,"-")
-        # print(ws.cell(row=i,column=1).value,"   -",get_equipe_id(equipes,ws.cell(row=i,column=4).value))
+
     file1.close()
     return tmp_li
 
@@ -226,8 +226,8 @@ def insert_jouer_script(liste_rencontres,joueurs):
     wookbook = openpyxl.load_workbook("./Finished/match_joueurs.xlsx")
     ws = wookbook.active
     tmp_li = []
+    tmp  = 0
     for i in range(2, ws.max_row+1):
-    # for i in range(2, 5):
         if ws.cell(row=i,column=1).value in liste_rencontres:
             try:
                 file1.write("""INSERT INTO Jouer(idRencontre,idJoueur,titulaire,capitaine,nombreCartonJaune,nombreCartonRouge,dossard)   
@@ -241,25 +241,29 @@ def insert_jouer_script(liste_rencontres,joueurs):
                     h = ws.cell(row=i,column=8).value,
                 ))
                 tmp_li.append(ws.cell(row=i,column=1).value)
+                # print(i)
             except Exception as ex:
-                traceback.print_exc()
-                print(i,'****',ex)
+                tmp += 1
+                # traceback.print_exc()
+                # print("Joueur not found {0}".format(i))
+                # print(i,'****',ex)
                 pass
         # print(ws.cell(row=i,column=1).value,"   -",ws.cell(row=i,column=4).value,"-")
         # print(ws.cell(row=i,column=1).value,"   -",get_equipe_id(equipes,ws.cell(row=i,column=4).value))
     file1.close()
+    print(tmp)
     return tmp_li
 
 
-def insert_marquer_script(equipes,liste_joueurs,joueurs,liste_rencontres):
+def insert_marquer_script(equipes,joueurs,liste_rencontres):
     file1 = open('insert_marquer_script.sql', 'a',encoding="utf-8")
     wookbook = openpyxl.load_workbook("./Finished/buts.xlsx")
     ws = wookbook.active
+    tmp= 0
     for i in range(2, ws.max_row+1):
-    # for i in range(2, 5):
-        idJoueur = get_joueur_id(joueurs,ws.cell(row=i,column=4).value)
-        if ws.cell(row=i,column=1).value in liste_rencontres and (idJoueur in liste_joueurs  or True) :
+        if ws.cell(row=i,column=1).value in liste_rencontres :
             try:
+                idJoueur = get_joueur_id(joueurs,ws.cell(row=i,column=4).value)
                 file1.write("""INSERT INTO Marquer(idRencontre,idJoueur,estPenalite,minute,pourEquipe)   
                 VALUES ({a},{c},{d},{e},{f});\n""".format(
                     a=ws.cell(row=i,column=1).value,
@@ -269,12 +273,14 @@ def insert_marquer_script(equipes,liste_joueurs,joueurs,liste_rencontres):
                     f=get_equipe_id(equipes,ws.cell(row=i,column=5).value),
                 ))
             except Exception as ex:
-                traceback.print_exc()
-                print(i,'****',ex)
+                # traceback.print_exc()
+                # print(i,'****',ex)
+                tmp +=1
                 pass
         # print(ws.cell(row=i,column=1).value,"   -",ws.cell(row=i,column=4).value,"-")
         # print(ws.cell(row=i,column=1).value,"   -",get_equipe_id(equipes,ws.cell(row=i,column=4).value))
     file1.close()
+    print(tmp)
 
 
 def insert_stades_script(stades):
@@ -297,7 +303,12 @@ tmp2 = get_stades()
 tmp3 = get_arbitres()
 tmp4 = insert_rencontre_script(tmp,tmp2,tmp3) #liste id des rencontres
 tmp5 = get_joueurs()
-# tmp6 = insert_jouer_script(tmp4,tmp5) #liste joueurs 
+
+tmp5 = insert_joueur_script(tmp)
+
+
+tmp6 = insert_jouer_script(tmp4,tmp5) #liste joueurs 
+insert_marquer_script(tmp,tmp5,tmp4)
 
 
 #? Call for functions 
@@ -308,13 +319,13 @@ tmp5 = get_joueurs()
 # insert_stades_script(tmp2)
 # insert_arbitres_script(tmp3)
 # tmp4 = insert_rencontre_script(tmp,tmp2,tmp3)
+# tmp6 = insert_jouer_script(tmp4,tmp5) #liste joueurs 
 
 
 #!--not tested 
 
-# insert_joueur_script(tmp)
 # tmp6 = insert_jouer_script(tmp4,tmp5)
-# insert_marquer_script(tmp,tmp6,tmp5,tmp4)
+# insert_marquer_script(tmp,tmp5,tmp4)
 
 
 
